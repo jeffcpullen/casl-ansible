@@ -1,0 +1,173 @@
+---
+## Default volume device sizes
+default_root_volume_size: '50'
+default_docker_volume_size: '40'
+default_etcd_volume_size: '40'
+default_cns_volume_size: '200'
+default_rhv_storage_domain: "gluster-vmstore"
+default_network: "ovirtmgmt"
+default_flavor: "Large"
+default_cluster: Default
+default_network_netmask: '255.255.255.0'
+default_network_gateway: '192.168.2.1'
+default_nic_name: 'eth0'
+
+
+# Default port for OpenShift API and Web Console
+openshift_master_api_port: 8443
+openshift_master_console_port: 8443
+
+
+## Default infra skeleton variables
+default_cloud_infrastructure:
+   masters:
+     count: 1
+     flavor: "{{ default_flavor }}"
+     network: "{{ default_network }}"
+     network_netmask: "{{ default_network_netmask }}"
+     network_gateway: "{{ default_network_gateway }}"
+     nic_name: "{{ default_nic_name }}"
+     name_prefix: "master"
+     rhv_cluster: "{{ default_cluster }}"
+     root_volume_size: "{{ default_root_volume_size }}"
+     rhv_storage_domain: "{{ default_rhv_storage_domain }}"
+     docker_volume_size: "{{ default_docker_volume_size }}"
+     etcd_volume_size: "{{ default_etcd_volume_size }}"
+   etcdnodes:
+     count: 0
+     flavor: "{{ default_flavor }}"
+     network: "{{ default_network }}"
+     network_netmask: "{{ default_network_netmask }}"
+     network_gateway: "{{ default_network_gateway }}"
+     nic_name: "{{ default_nic_name }}"
+     name_prefix: "etcd"
+     rhv_cluster: "{{ default_cluster }}"
+     root_volume_size: "{{ default_root_volume_size }}"
+     rhv_storage_domain: "{{ default_rhv_storage_domain }}"
+     docker_volume_size: "{{ default_docker_volume_size }}"
+     etcd_volume_size: "{{ default_etcd_volume_size }}"
+   appnodes:
+     count: 3
+     flavor: "{{ default_flavor }}"
+     network: "{{ default_network }}"
+     network_netmask: "{{ default_network_netmask }}"
+     network_gateway: "{{ default_network_gateway }}"
+     nic_name: "{{ default_nic_name }}"
+     name_prefix: "node"
+     rhv_cluster: "{{ default_cluster }}"
+     root_volume_size: "{{ default_root_volume_size }}"
+     rhv_storage_domain: "{{ default_rhv_storage_domain }}"
+     docker_volume_size: "{{ default_docker_volume_size }}"
+     etcd_volume_size: "{{ default_etcd_volume_size }}"
+   infranodes:
+     count: 1
+     flavor: "{{ default_flavor }}"
+     network: "{{ default_network }}"
+     network_netmask: "{{ default_network_netmask }}"
+     network_gateway: "{{ default_network_gateway }}"
+     nic_name: "{{ default_nic_name }}"
+     name_prefix: "infra"
+     rhv_cluster: "{{ default_cluster }}"
+     root_volume_size: "{{ default_root_volume_size }}"
+     rhv_storage_domain: "{{ default_rhv_storage_domain }}"
+     docker_volume_size: "{{ default_docker_volume_size }}"
+     etcd_volume_size: "{{ default_etcd_volume_size }}"
+   cnsnodes:
+     count: 0
+     flavor: "{{ default_flavor }}"
+     network: "{{ default_network }}"
+     network_netmask: "{{ default_network_netmask }}"
+     network_gateway: "{{ default_network_gateway }}"
+     nic_name: "{{ default_nic_name }}"
+     name_prefix: "cns"
+     rhv_cluster: "{{ default_cluster }}"
+     root_volume_size: "{{ default_root_volume_size }}"
+     docker_volume_size: "{{ default_docker_volume_size }}"
+     rhv_storage_domain: "{{ default_rhv_storage_domain }}"
+     gluster_volume_size: "{{ default_cns_volume_size }}"
+     etcd_volume_size: "{{ default_etcd_volume_size }}"
+
+## Default volume device names
+default_root_volume: '/dev/sda1'
+
+## NOTE: These devices names are fixed now. Will be customizable in the future
+## Keeping the values here for future references
+#default_docker_volume: '/dev/xvdb'
+#default_cns_volume: '/dev/xvdg'
+
+## Default instance numbers
+#default_rhv_num_masters: 1
+#default_rhv_num_etcd: 0
+#default_rhv_num_app_nodes: 3
+#default_rhv_num_infra_nodes: 1
+#default_rhv_num_cns_nodes: 0
+
+## Default instance flavors
+#default_master_flavor: "m4.xlarge"
+#default_etcd_flavor: "i3.xlarge"
+#default_app_node_flavor: "m4.xlarge"
+#default_infra_node_flavor: "m4.xlarge"
+#default_cns_node_flavor: "i3.xlarge"
+
+## Default instance prefix names
+#default_rhv_masters_name_prefix: "master"
+#default_rhv_etcd_name_prefix: "etcd"
+#default_rhv_appnodes_name_prefix: "node"
+#default_rhv_infranodes_name_prefix: "infra"
+#default_rhv_cnsnodes_name_prefix: "cns"
+
+## Feed AZs for each instance from `cloud_infrastructure` list on the inventory
+rhv_masters_zones: "{{ cloud_infrastructure.masters.zones }}"
+rhv_etcd_zones: "{{ cloud_infrastructure.etcdnodes.zones }}"
+rhv_appnodes_zones: "{{ cloud_infrastructure.appnodes.zones }}"
+rhv_infranodes_zones: "{{ cloud_infrastructure.infranodes.zones }}"
+rhv_cnsnodes_zones: "{{ cloud_infrastructure.cnsnodes.zones }}"
+
+## Feed name prefix for each instance from `cloud_infrastructure` list on the inventory
+rhv_masters_name_prefix: "{{ cloud_infrastructure.masters.name_prefix }}"
+rhv_etcd_name_prefix: "{{ cloud_infrastructure.etcdnodes.name_prefix }}"
+rhv_appnodes_name_prefix: "{{ cloud_infrastructure.appnodes.name_prefix }}"
+rhv_infranodes_name_prefix: "{{ cloud_infrastructure.infranodes.name_prefix }}"
+rhv_cnsnodes_name_prefix: "{{ cloud_infrastructure.cnsnodes.name_prefix }}"
+
+## Feed instance numbers for each instance from `cloud_infrastructure` list on the inventory
+rhv_num_masters: "{{ cloud_infrastructure.masters.count }}"
+rhv_num_etcd: "{{ cloud_infrastructure.etcdnodes.count }}"
+rhv_num_app_nodes: "{{ cloud_infrastructure.appnodes.count }}"
+rhv_num_infra_nodes: "{{ cloud_infrastructure.infranodes.count }}"
+rhv_num_cns_nodes: "{{ cloud_infrastructure.cnsnodes.count }}"
+
+## Feed instance flavors for each instance from `cloud_infrastructure` list on the inventory
+master_flavor: "{{ cloud_infrastructure.masters.flavor }}"
+etcd_flavor: "{{ cloud_infrastructure.etcdnodes.flavor }}"
+app_node_flavor: "{{ cloud_infrastructure.appnodes.flavor }}"
+infra_node_flavor: "{{ cloud_infrastructure.infranodes.flavor }}"
+cns_node_flavor: "{{ cloud_infrastructure.cnsnodes.flavor }}"
+
+## Feed volume device names for each instance from `cloud_infrastructure` list on the inventory
+master_root_volume: "{{ default_root_volume }}"
+etcd_root_volume: "{{ default_root_volume }}"
+infra_node_root_volume: "{{ default_root_volume }}"
+app_node_root_volume: "{{ default_root_volume }}"
+cns_node_root_volume: "{{ default_root_volume }}"
+## Temporary set for Docker and Gluster Storage block device names
+## Leaving here as a reference. Will be handle on a handle on a different way in the future
+#cns_node_glusterfs_volume: "{{ default_cns_volume }}"
+#docker_storage_block_device: "{{ default_docker_volume }}"
+
+## Feed root volume device sizes for each instance from `cloud_infrastructure` list on the inventory
+master_root_volume_size: "{{ cloud_infrastructure.masters.root_volume_size }}"
+etcd_root_volume_size: "{{ cloud_infrastructure.etcdnodes.root_volume_size  }}"
+infra_node_root_volume_size: "{{ cloud_infrastructure.infranodes.root_volume_size }}"
+app_node_root_volume_size: "{{ cloud_infrastructure.appnodes.root_volume_size }}"
+cns_node_root_volume_size: "{{ cloud_infrastructure.cnsnodes.root_volume_size }}"
+
+## Feed root volume device sizes for each instance from `cloud_infrastructure` list on the inventory
+master_docker_volume_size: "{{ cloud_infrastructure.masters.docker_volume_size }}"
+etcd_docker_volume_size: "{{ cloud_infrastructure.etcdnodes.docker_volume_size  }}"
+infra_node_docker_volume_size: "{{ cloud_infrastructure.infranodes.docker_volume_size }}"
+app_node_docker_volume_size: "{{ cloud_infrastructure.appnodes.docker_volume_size }}"
+cns_node_docker_volume_size: "{{ cloud_infrastructure.cnsnodes.docker_volume_size }}"
+
+## Feed gluster volume device sizes for CNS instances from `cloud_infrastructure` list on the inventory
+cns_node_glusterfs_volume_size: "{{ cloud_infrastructure.cnsnodes.gluster_volume_size }}"

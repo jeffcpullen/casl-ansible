@@ -1,0 +1,40 @@
+---
+# RHV doesn't have a DNS component so DNS entries must be created prior to running
+# casl. This will give a list of all the DNS entries needed for nodes.
+- name: Display expected Openshift Master Default subdomain that must exist in DNS
+  debug:
+    msg: "{{ openshift_master_default_subdomain }}"
+
+- name: Display expected OpenShift Public Cluster LB that must exist in DNS
+  debug:
+    msg: "{{ openshift_master_cluster_public_hostname }}"
+
+- name: Display expected Master DNS entries that must exist prior to execution
+  debug:
+    msg: "{{ cloud_infrastructure.masters.name_prefix }}-{{ item }}.{{ env_id }}.{{ dns_domain }}"
+  with_sequence: count={{ cloud_infrastructure.masters.count }}
+  when: cloud_infrastructure.masters.count > 0
+
+- name: Display expected Etcd DNS entries that must exist prior to execution
+  debug:
+    msg: "{{ cloud_infrastructure.etcdnodes.name_prefix }}-{{ item }}.{{ env_id }}.{{ dns_domain }}"
+  with_sequence: count={{ cloud_infrastructure.etcdnodes.count }}
+  when: cloud_infrastructure.etcdnodes.count > 0
+
+- name: Display expected Infra DNS entries that must exist prior to execution
+  debug:
+    msg: "{{ cloud_infrastructure.infranodes.name_prefix }}-{{ item }}.{{ env_id }}.{{ dns_domain }}"
+  with_sequence: count={{ cloud_infrastructure.infranodes.count }}
+  when: cloud_infrastructure.infranodes.count > 0
+
+- name: Display expected App Nodes DNS entries that must exist prior to execution
+  debug:
+    msg: "{{ cloud_infrastructure.appnodes.name_prefix }}-{{ item }}.{{ env_id }}.{{ dns_domain }}"
+  with_sequence: count={{ cloud_infrastructure.appnodes.count }}
+  when: cloud_infrastructure.appnodes.count > 0
+
+- name: Display expected CNS Nodes DNS entries that must exist prior to execution
+  debug:
+    msg: "{{ cloud_infrastructure.cnsnodes.name_prefix }}-{{ item }}.{{ env_id }}.{{ dns_domain }}"
+  with_sequence: count={{ cloud_infrastructure.cnsnodes.count }}
+  when: cloud_infrastructure.cnsnodes.count > 0

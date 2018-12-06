@@ -1,0 +1,7 @@
+---
+
+- import_tasks: pre-reqs.yml
+
+- import_tasks: display-expected-dns.yml
+
+- import_tasks: create-vms.yml

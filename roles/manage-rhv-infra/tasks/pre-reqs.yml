@@ -1,0 +1,11 @@
+---
+- name: Fail when RHV URL, USER, PASSWORD and CA certificate environment variables are not defined
+  debug:
+    msg: "'OVIRT_URL', 'OVIRT_USERNAME', 'OVIRT_PASSWORD' and 'OVIRT_CA' environment variables must be defined"
+  failed_when: (lookup('env','OVIRT_URL')  == "") or
+               (lookup('env','OVIRT_USERNAME')  == "") or
+               (lookup('env','OVIRT_PASSWORD')  == "") or
+               (lookup('env','OVIRT_CA')  == "")
+
+- name: Merge infrastructure dictionary
+  set_fact: cloud_infrastructure="{{ default_cloud_infrastructure |combine(cloud_infrastructure, recursive=True) }}"
