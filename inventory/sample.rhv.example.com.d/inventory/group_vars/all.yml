@@ -38,6 +38,8 @@ cloud_infrastructure:
      root_volume_size: <REPLACE WITH THE SIZE (Gi) FOR ROOT POOL DEVICE>
      rhv_storage_domain: <REPLACE WITH THE STORAGE DOMAIN TO USE FOR DOCKER STORAGE>
      docker_volume_size: <REPLACE WITH THE SIZE (Gi) FOR DOCKER POOL DEVICE>
+     etcd_storage_domain: <REPLACE WITH THE STORAGE DOMAIN TO USE FOR ETCD STORAGE>
+     etcd_volume_size: <REPLACE WITH THE SIZE (Gi) FOR ETCD POOL DEVICE>
    etcdnodes:
      count: <REPLACE WITH NUMBER OF INSTANCES TO CREATE>
      flavor: <REPLACE WITH DESIRED FLAVOR FOR THE INSTANCE>

@@ -16,6 +16,15 @@
   with_sequence: count={{ cloud_infrastructure.masters.count }}
   when: cloud_infrastructure.masters.count > 0
   register: masters_ip
+  failed_when: masters_ip.stdout == "" or masters_ip.rc == 1
+
+- name: Debug masters_ip
+  debug:
+    var: masters_ip
+
+#- name: Print masters_ip test
+#  debug:
+#    msg: "{{ masters_ip['results'][1]['stdout'] }}"
 
 
 - name: Validate and store OpenShift Etcd IPs
@@ -23,24 +32,28 @@
   with_sequence: count={{ cloud_infrastructure.etcdnodes.count }}
   when: cloud_infrastructure.etcdnodes.count > 0
   register: etcdnodes_ip
+  failed_when: etcdnodes_ip.stdout == "" or etcdnodes_ip.rc == 1
 
 - name: Validate and store OpenShift Infra IPs
   command: "dig +short {{ cloud_infrastructure.infranodes.name_prefix }}-{{ item }}.{{ env_id }}.{{ dns_domain }}"
   with_sequence: count={{ cloud_infrastructure.infranodes.count }}
   when: cloud_infrastructure.infranodes.count > 0
   register: infranodes_ip
+  failed_when: infranodes_ip.stdout == "" or infranodes_ip.rc == 1
 
 - name: Validate and store OpenShift App Nodes IPs
   command: "dig +short {{ cloud_infrastructure.appnodes.name_prefix }}-{{ item }}.{{ env_id }}.{{ dns_domain }}"
   with_sequence: count={{ cloud_infrastructure.appnodes.count }}
   when: cloud_infrastructure.appnodes.count > 0
   register: appnodes_ip
+  failed_when: appnodes_ip.stdout == "" or appnodes_ip.rc == 1
 
 - name: Validate and store OpenShift CNS Nodes IPs
   command: "dig +short {{ cloud_infrastructure.cnsnodes.name_prefix }}-{{ item }}.{{ env_id }}.{{ dns_domain }}"
   with_sequence: count={{ cloud_infrastructure.cnsnodes.count }}
   when: cloud_infrastructure.cnsnodes.count > 0
   register: cnsnodes_ip
+  failed_when: cnsnodes_ip.stdout == "" or cnsnodes_ip.rc == 1
 
 ## Create the VMs
 - name: Obtain SSO token
@@ -54,17 +67,18 @@
 ### Creates the Masters
 - name: Create OCP Master Virtual Machines from template
   ovirt_vms:
-    state: running
     name: "{{ cloud_infrastructure.masters.name_prefix }}-{{ item }}.{{ env_id }}.{{ dns_domain }}"
-    template: "{{ cloud_infrastructure.masters.flavor }}"
+    template: "{{ cloud_infrastructure.masters.template_name }}"
+    state: running
     cluster: "{{ cloud_infrastructure.masters.rhv_cluster }}"
+    cpu_cores: "2"
+    memory: "2048Mib"
     wait: True
-    storage_domain: "{{ cloud_infrastructure.masters.docker_storage_domain }}"
     cloud_init:
       host_name: "{{ cloud_infrastructure.masters.name_prefix }}-{{ item }}.{{ env_id }}.{{ dns_domain }}"
       dns_search: "{{ dns_domain }}"
       nic_boot_protocol: static
-      nic_ip_address: "{{ masters_ip[item].stdout }}"
+      nic_ip_address: "{{ masters_ip['results'][item|int -1]['stdout'] }}"
       nic_netmask: "{{ cloud_infrastructure.masters.network_netmask }}"
       nic_gateway: "{{ cloud_infrastructure.masters.network_gateway }}"
       nic_name: "{{ cloud_infrastructure.masters.network_nic_name }}"
@@ -72,7 +86,7 @@
   with_sequence: count={{ cloud_infrastructure.masters.count }}
 
 - name: Create OCP Master Docker disk
-  ovirt_disks:
+  ovirt_disk:
     name: "{{ cloud_infrastructure.masters.name_prefix }}-{{ item }}-{{ env_id }}-docker-disk"
     vm_name: "{{ cloud_infrastructure.masters.name_prefix }}-{{ item }}.{{ env_id }}.{{ dns_domain }}"
     storage_domain: "{{ cloud_infrastructure.masters.docker_storage_domain }}"
@@ -82,10 +96,10 @@
   with_sequence: count={{ cloud_infrastructure.masters.count }}
 
 - name: Create OCP Master Etcd disk
-  ovirt_disks:
+  ovirt_disk:
     name: "{{ cloud_infrastructure.masters.name_prefix }}-{{ item }}-{{ env_id }}-etcd-disk"
     vm_name: "{{ cloud_infrastructure.masters.name_prefix }}-{{ item }}.{{ env_id }}.{{ dns_domain }}"
-    storage_domain: "{{ storage_domain }}"
+    storage_domain: "{{ cloud_infrastructure.masters.etcd_storage_domain }}"
     size: "{{ cloud_infrastructure.masters.etcd_volume_size }}"
     format: cow
     interface: virtio

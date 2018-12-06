@@ -9,6 +9,10 @@
   debug:
     msg: "{{ openshift_master_cluster_public_hostname }}"
 
+- name: Display expected OpenShift Internal Cluster LB that must exist in DNS
+  debug:
+    msg: "{{ openshift_master_cluster_hostname }}"  
+
 - name: Display expected Master DNS entries that must exist prior to execution
   debug:
     msg: "{{ cloud_infrastructure.masters.name_prefix }}-{{ item }}.{{ env_id }}.{{ dns_domain }}"
