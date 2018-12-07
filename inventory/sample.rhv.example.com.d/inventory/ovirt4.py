@@ -113,6 +113,8 @@ def create_connection():
     """
     Create a connection to oVirt engine API.
     """
+    """
+    DISABLE CONFIG FILE
     # Get the path of the configuration file, by default use
     # 'ovirt.ini' file in script directory:
     default_path = os.path.join(
@@ -133,14 +135,14 @@ def create_connection():
     if not config.has_section('ovirt'):
         config.add_section('ovirt')
     config.read(config_path)
-
-    # Create a connection with options defined in ini file:
+    """
+    # Create a connection with options defined in ENV variables:
     return sdk.Connection(
-        url=config.get('ovirt', 'ovirt_url'),
-        username=config.get('ovirt', 'ovirt_username'),
-        password=config.get('ovirt', 'ovirt_password'),
-        ca_file=config.get('ovirt', 'ovirt_ca_file'),
-        insecure=config.get('ovirt', 'ovirt_ca_file') is None,
+        url=os.environ.get('OVIRT_URL', 'ovirt_url'),
+        username=os.environ.get('OVIRT_USERNAME', 'ovirt_username'),
+        password=os.environ.get('OVIRT_PASSWORD', 'ovirt_password'),
+        ca_file=os.environ.get('OVIRT_CA', 'ovirt_ca_file'),
+        insecure=os.environ.get('OVIRT_SECURE', 'ovirt_ca_file') is None,
     )
 
 

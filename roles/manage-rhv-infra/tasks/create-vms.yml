@@ -71,8 +71,8 @@
     template: "{{ cloud_infrastructure.masters.template_name }}"
     state: running
     cluster: "{{ cloud_infrastructure.masters.rhv_cluster }}"
-    cpu_cores: "2"
-    memory: "2048Mib"
+    cpu_cores: "{{ cloud_infrastructure.masters.cpu_count }}"
+    memory: "{{ cloud_infrastructure.masters.memory }}"
     wait: True
     cloud_init:
       host_name: "{{ cloud_infrastructure.masters.name_prefix }}-{{ item }}.{{ env_id }}.{{ dns_domain }}"
@@ -105,145 +105,223 @@
     interface: virtio
   with_sequence: count={{ cloud_infrastructure.masters.count }}
 
-- name: Tag as rhv-ocp host
+- name: Tag as master
   ovirt_tags:
-    name: rhv-ocp
+    name: "{{ group_masters_tag }}"
     state: attached
     vms:
       - "{{ cloud_infrastructure.masters.name_prefix }}-{{ item }}.{{ env_id }}.{{ dns_domain }}"
   with_sequence: count={{ cloud_infrastructure.masters.count }}
+  when: cloud_infrastructure.etcdnodes.count > 0
 
-- name: Tag the masters
+- name: Tag as a master and etcd
   ovirt_tags:
-    name: rhv-ocp-master
+    name: "{{ group_masters_etcd_tag }}"
     state: attached
     vms:
       - "{{ cloud_infrastructure.masters.name_prefix }}-{{ item }}.{{ env_id }}.{{ dns_domain }}"
   with_sequence: count={{ cloud_infrastructure.masters.count }}
+  when: cloud_infrastructure.etcdnodes.count == 0
+
+########### ETCD NODES ##############
+
+- name: Create OCP Etcd Virtual Machines from template
+  ovirt_vms:
+    name: "{{ cloud_infrastructure.etcdnodes.name_prefix }}-{{ item }}.{{ env_id }}.{{ dns_domain }}"
+    template: "{{ cloud_infrastructure.etcdnodes.template_name }}"
+    state: running
+    cluster: "{{ cloud_infrastructure.etcdnodes.rhv_cluster }}"
+    cpu_cores: "{{ cloud_infrastructure.etcdnodes.cpu_count }}"
+    memory: "{{ cloud_infrastructure.etcdnodes.memory }}"
+    wait: True
+    cloud_init:
+      host_name: "{{ cloud_infrastructure.etcdnodes.name_prefix }}-{{ item }}.{{ env_id }}.{{ dns_domain }}"
+      dns_search: "{{ dns_domain }}"
+      nic_boot_protocol: static
+      nic_ip_address: "{{ etcdnodes_ip['results'][item|int -1]['stdout'] }}"
+      nic_netmask: "{{ cloud_infrastructure.etcdnodes.network_netmask }}"
+      nic_gateway: "{{ cloud_infrastructure.etcdnodes.network_gateway }}"
+      nic_name: "{{ cloud_infrastructure.etcdnodes.network_nic_name }}"
+      nic_on_boot: true
+  with_sequence: count={{ cloud_infrastructure.etcdnodes.count }}
+
+- name: Create OCP Etcdnode Docker disk
+  ovirt_disk:
+    name: "{{ cloud_infrastructure.etcdnodes.name_prefix }}-{{ item }}-{{ env_id }}-docker-disk"
+    vm_name: "{{ cloud_infrastructure.etcdnodes.name_prefix }}-{{ item }}.{{ env_id }}.{{ dns_domain }}"
+    storage_domain: "{{ cloud_infrastructure.etcdnodes.docker_storage_domain }}"
+    size: "{{ cloud_infrastructure.etcdnodes.docker_volume_size }}"
+    format: cow
+    interface: virtio
+  with_sequence: count={{ cloud_infrastructure.etcdnodes.count }}
+
+- name: Create OCP Etcdnode Etcd disk
+  ovirt_disk:
+    name: "{{ cloud_infrastructure.etcdnodes.name_prefix }}-{{ item }}-{{ env_id }}-etcd-disk"
+    vm_name: "{{ cloud_infrastructure.etcdnodes.name_prefix }}-{{ item }}.{{ env_id }}.{{ dns_domain }}"
+    storage_domain: "{{ cloud_infrastructure.etcdnodes.etcd_storage_domain }}"
+    size: "{{ cloud_infrastructure.etcdnodes.etcd_volume_size }}"
+    format: cow
+    interface: virtio
+  with_sequence: count={{ cloud_infrastructure.etcdnodes.count }}
+
+- name: Tag the etcdnodes
+  ovirt_tags:
+    name: "{{ group_etcd_nodes_tag }}"
+    state: attached
+    vms:
+      - "{{ cloud_infrastructure.etcdnodes.name_prefix }}-{{ item }}.{{ env_id }}.{{ dns_domain }}"
+  with_sequence: count={{ cloud_infrastructure.etcdnodes.count }}
 
 ########### INFRA NODES ##############
 
-- name: Creates OCP Infra Virtual Machine from template
+- name: Create OCP Infranodes Virtual Machines from template
   ovirt_vms:
+    name: "{{ cloud_infrastructure.infranodes.name_prefix }}-{{ item }}.{{ env_id }}.{{ dns_domain }}"
+    template: "{{ cloud_infrastructure.infranodes.template_name }}"
     state: running
-    name: "{{ infra_name }}-{{ item }}"
-    template: "{{ rhv_template }}"
-    cluster: Default
-    cpu_cores: "{{ infra_cpu_cores }}"
-    memory: "{{ infra_memory }}"
-    wait: true
-    storage_domain: "{{ storage_domain }}"
+    cluster: "{{ cloud_infrastructure.infranodes.rhv_cluster }}"
+    cpu_cores: "{{ cloud_infrastructure.infranodes.cpu_count }}"
+    memory: "{{ cloud_infrastructure.infranodes.memory }}"
+    wait: True
     cloud_init:
-      host_name: "{{ infra_name }}-{{ item }}.{{ domain_name }}"
-      dns_search: homelab.work
+      host_name: "{{ cloud_infrastructure.infranodes.name_prefix }}-{{ item }}.{{ env_id }}.{{ dns_domain }}"
+      dns_search: "{{ dns_domain }}"
       nic_boot_protocol: static
-      nic_ip_address: 192.168.2.222
-      nic_netmask: 255.255.255.0
-      nic_gateway: 192.168.2.1
-      nic_name: eth0
+      nic_ip_address: "{{ infranodes_ip['results'][item|int -1]['stdout'] }}"
+      nic_netmask: "{{ cloud_infrastructure.infranodes.network_netmask }}"
+      nic_gateway: "{{ cloud_infrastructure.infranodes.network_gateway }}"
+      nic_name: "{{ cloud_infrastructure.infranodes.network_nic_name }}"
       nic_on_boot: true
-      custom_script: |
-        runcmd:
-         - [ ipa-client-install, -U, --password, {{ ipa_password }}, --realm, HOMELAB.WORK, -p, {{ ipa_user }}, --mkhomedir, --enable-dns-updates, --hostname={{ infra_name }}-{{ item }}.{{ domain_name }}, --domain={{ domain_name }}, --force-join ]
-  with_sequence: count={{ infra_count }}
+  with_sequence: count={{ cloud_infrastructure.infranodes.count }}
 
-- name: Create OCP Infra Docker disk
-  ovirt_disks:
-    name: "{{ infra_name }}-{{ item }}-docker-disk"
-    vm_name: "{{ infra_name }}-{{ item }}"
-    storage_domain: "{{ storage_domain }}"
-    size: "{{ infra_docker_disk_size }}"
+- name: Create OCP Infranodes Docker disk
+  ovirt_disk:
+    name: "{{ cloud_infrastructure.infranodes.name_prefix }}-{{ item }}-{{ env_id }}-docker-disk"
+    vm_name: "{{ cloud_infrastructure.infranodes.name_prefix }}-{{ item }}.{{ env_id }}.{{ dns_domain }}"
+    storage_domain: "{{ cloud_infrastructure.infranodes.docker_storage_domain }}"
+    size: "{{ cloud_infrastructure.infranodes.docker_volume_size }}"
     format: cow
     interface: virtio
-  with_sequence: count={{ infra_count }}
+  with_sequence: count={{ cloud_infrastructure.infranodes.count }}
 
-- name: Create OCP Infra Origin disk
-  ovirt_disks:
-    name: "{{ infra_name }}-{{ item }}-origin-disk"
-    vm_name: "{{ infra_name }}-{{ item }}"
-    storage_domain: "{{ storage_domain }}"
-    size: "{{ infra_origin_disk_size }}"
+- name: Create OCP Infranodes Origin disk
+  ovirt_disk:
+    name: "{{ cloud_infrastructure.infranodes.name_prefix }}-{{ item }}-{{ env_id }}-etcd-disk"
+    vm_name: "{{ cloud_infrastructure.infranodes.name_prefix }}-{{ item }}.{{ env_id }}.{{ dns_domain }}"
+    storage_domain: "{{ cloud_infrastructure.infranodes.origin_storage_domain }}"
+    size: "{{ cloud_infrastructure.infranodes.origin_volume_size }}"
     format: cow
     interface: virtio
-  with_sequence: count={{ infra_count }}
+  with_sequence: count={{ cloud_infrastructure.infranodes.count }}
 
-- name: Tag as rhv-ocp host
+- name: Tag the infranode
   ovirt_tags:
-    name: rhv-ocp
+    name: "{{ group_infra_nodes_tag }}"
     state: attached
     vms:
-      - "{{ infra_name }}-{{ item }}"
-  with_sequence: count={{ infra_count }}
-
-- name: Tag the infra nodes
-  ovirt_tags:
-    name: rhv-ocp-infra
-    state: attached
-    vms:
-      - "{{ infra_name }}-{{ item }}"
-  with_sequence: count={{ infra_count }}
+      - "{{ cloud_infrastructure.infranodes.name_prefix }}-{{ item }}.{{ env_id }}.{{ dns_domain }}"
+  with_sequence: count={{ cloud_infrastructure.infranodes.count }}
 
 ########### APP NODES ##############
 
-- name: Creates OCP App Nodes Virtual Machine from template
+- name: Create OCP Appnode Virtual Machines from template
   ovirt_vms:
+    name: "{{ cloud_infrastructure.appnodes.name_prefix }}-{{ item }}.{{ env_id }}.{{ dns_domain }}"
+    template: "{{ cloud_infrastructure.appnodes.template_name }}"
     state: running
-    name: "{{ appnode_name }}-{{ item }}"
-    template: "{{ rhv_template }}"
-    cluster: Default
-    cpu_cores: "{{ appnode_cpu_cores }}"
-    memory: "{{ appnode_memory }}"
-    wait: true
-    storage_domain: "{{ storage_domain }}"
+    cluster: "{{ cloud_infrastructure.appnodes.rhv_cluster }}"
+    cpu_cores: "{{ cloud_infrastructure.appnodes.cpu_count }}"
+    memory: "{{ cloud_infrastructure.appnodes.memory }}"
+    wait: True
     cloud_init:
-      host_name: "{{ appnode_name }}-{{ item }}.{{ domain_name }}"
-      dns_search: homelab.work
+      host_name: "{{ cloud_infrastructure.appnodes.name_prefix }}-{{ item }}.{{ env_id }}.{{ dns_domain }}"
+      dns_search: "{{ dns_domain }}"
       nic_boot_protocol: static
-      nic_ip_address: 192.168.2.223
-      nic_netmask: 255.255.255.0
-      nic_gateway: 192.168.2.1
-      nic_name: eth0
+      nic_ip_address: "{{ appnodes_ip['results'][item|int -1]['stdout'] }}"
+      nic_netmask: "{{ cloud_infrastructure.appnodes.network_netmask }}"
+      nic_gateway: "{{ cloud_infrastructure.appnodes.network_gateway }}"
+      nic_name: "{{ cloud_infrastructure.appnodes.network_nic_name }}"
       nic_on_boot: true
-      custom_script: |
-        runcmd:
-         - [ ipa-client-install, -U, --password, {{ ipa_password }}, --realm, HOMELAB.WORK, -p, {{ ipa_user }}, --mkhomedir, --enable-dns-updates, --hostname={{ appnode_name }}-{{ item }}.{{ domain_name }}, --domain={{ domain_name }}, --force-join ]
-  with_sequence: count={{ appnode_count }}
+  with_sequence: count={{ cloud_infrastructure.appnodes.count }}
 
-- name: Create OCP App Node Docker disk
-  ovirt_disks:
-    name: "{{ appnode_name }}-{{ item }}-docker-disk"
-    vm_name: "{{ appnode_name }}-{{ item }}"
-    storage_domain: "{{ storage_domain }}"
-    size: "{{ appnode_docker_disk_size }}"
+- name: Create OCP Appnode Docker disk
+  ovirt_disk:
+    name: "{{ cloud_infrastructure.appnodes.name_prefix }}-{{ item }}-{{ env_id }}-docker-disk"
+    vm_name: "{{ cloud_infrastructure.appnodes.name_prefix }}-{{ item }}.{{ env_id }}.{{ dns_domain }}"
+    storage_domain: "{{ cloud_infrastructure.appnodes.docker_storage_domain }}"
+    size: "{{ cloud_infrastructure.appnodes.docker_volume_size }}"
     format: cow
     interface: virtio
-  with_sequence: count={{ appnode_count }}
+  with_sequence: count={{ cloud_infrastructure.appnodes.count }}
 
-- name: Create OCP App Node Origin disk
-  ovirt_disks:
-    name: "{{ appnode_name }}-{{ item }}-origin-disk"
-    vm_name: "{{ appnode_name }}-{{ item }}"
-    storage_domain: "{{ storage_domain }}"
-    size: "{{ appnode_origin_disk_size }}"
+- name: Create OCP Appnode Origin disk
+  ovirt_disk:
+    name: "{{ cloud_infrastructure.appnodes.name_prefix }}-{{ item }}-{{ env_id }}-etcd-disk"
+    vm_name: "{{ cloud_infrastructure.appnodes.name_prefix }}-{{ item }}.{{ env_id }}.{{ dns_domain }}"
+    storage_domain: "{{ cloud_infrastructure.appnodes.origin_storage_domain }}"
+    size: "{{ cloud_infrastructure.appnodes.origin_volume_size }}"
     format: cow
     interface: virtio
-  with_sequence: count={{ appnode_count }}
+  with_sequence: count={{ cloud_infrastructure.appnodes.count }}
 
-- name: Tag as rhv-ocp host
+- name: Tag the appnode
   ovirt_tags:
-    name: rhv-ocp
+    name: "{{ group_app_nodes_tag }}"
     state: attached
     vms:
-      - "{{ appnode_name }}-{{ item }}"
-  with_sequence: count={{ appnode_count }}
+      - "{{ cloud_infrastructure.appnodes.name_prefix }}-{{ item }}.{{ env_id }}.{{ dns_domain }}"
+  with_sequence: count={{ cloud_infrastructure.appnodes.count }}
 
-- name: Tag the infra nodes
+########### OCS NODES ##############
+
+- name: Create OCP OpenShift Container Storage Virtual Machines from template
+  ovirt_vms:
+    name: "{{ cloud_infrastructure.cnsnodes.name_prefix }}-{{ item }}.{{ env_id }}.{{ dns_domain }}"
+    template: "{{ cloud_infrastructure.cnsnodes.template_name }}"
+    state: running
+    cluster: "{{ cloud_infrastructure.cnsnodes.rhv_cluster }}"
+    cpu_cores: "{{ cloud_infrastructure.cnsnodes.cpu_count }}"
+    memory: "{{ cloud_infrastructure.cnsnodes.memory }}"
+    wait: True
+    cloud_init:
+      host_name: "{{ cloud_infrastructure.cnsnodes.name_prefix }}-{{ item }}.{{ env_id }}.{{ dns_domain }}"
+      dns_search: "{{ dns_domain }}"
+      nic_boot_protocol: static
+      nic_ip_address: "{{ cnsnodes_ip['results'][item|int -1]['stdout'] }}"
+      nic_netmask: "{{ cloud_infrastructure.cnsnodes.network_netmask }}"
+      nic_gateway: "{{ cloud_infrastructure.cnsnodes.network_gateway }}"
+      nic_name: "{{ cloud_infrastructure.cnsnodes.network_nic_name }}"
+      nic_on_boot: true
+  with_sequence: count={{ cloud_infrastructure.cnsnodes.count }}
+
+- name: Create OCP OpenShift Container Storage Docker disk
+  ovirt_disk:
+    name: "{{ cloud_infrastructure.cnsnodes.name_prefix }}-{{ item }}-{{ env_id }}-docker-disk"
+    vm_name: "{{ cloud_infrastructure.cnsnodes.name_prefix }}-{{ item }}.{{ env_id }}.{{ dns_domain }}"
+    storage_domain: "{{ cloud_infrastructure.cnsnodes.docker_storage_domain }}"
+    size: "{{ cloud_infrastructure.cnsnodes.docker_volume_size }}"
+    format: cow
+    interface: virtio
+  with_sequence: count={{ cloud_infrastructure.cnsnodes.count }}
+
+- name: Create OCP OpenShift Container Storage Origin disk
+  ovirt_disk:
+    name: "{{ cloud_infrastructure.cnsnodes.name_prefix }}-{{ item }}-{{ env_id }}-etcd-disk"
+    vm_name: "{{ cloud_infrastructure.cnsnodes.name_prefix }}-{{ item }}.{{ env_id }}.{{ dns_domain }}"
+    storage_domain: "{{ cloud_infrastructure.cnsnodes.origin_storage_domain }}"
+    size: "{{ cloud_infrastructure.cnsnodes.origin_volume_size }}"
+    format: cow
+    interface: virtio
+  with_sequence: count={{ cloud_infrastructure.cnsnodes.count }}
+
+- name: Tag the OpenShift Container Storage node
   ovirt_tags:
-    name: rhv-ocp-appnode
+    name: "{{ group_cns_nodes_tag }}"
     state: attached
     vms:
-      - "{{ appnode_name }}-{{ item }}"
-  with_sequence: count={{ appnode_count }}
+      - "{{ cloud_infrastructure.cnsnodes.name_prefix }}-{{ item }}.{{ env_id }}.{{ dns_domain }}"
+  with_sequence: count={{ cloud_infrastructure.cnsnodes.count }}
 
 ## Reboot all the nodes to clear run-once
 

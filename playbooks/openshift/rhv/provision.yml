@@ -3,13 +3,24 @@
   roles:
     - { role: manage-rhv-infra, action: 'present' }
 
+  tasks:
+
+#  - name: Pause for a moment to allow systems to finish with cloud-init
+#    pause:
+#      minutes: 1
+
 - name: Refresh Server inventory
   hosts: localhost
   connection: local
   gather_facts: False
   tasks:
   - meta: refresh_inventory
-  
+
+  - name: List known inventory
+    debug:
+      msg: "{{ item }}"
+    with_inventory_hostnames:
+      - all
 - name: Wait for systems to become reachable
   hosts: cluster_hosts
   gather_facts: False
