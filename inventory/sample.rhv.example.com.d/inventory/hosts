@@ -22,12 +22,12 @@ glusterfs
 # Host Groups
 
 [masters:children]
-tag_group_masters_rhv
-tag_group_masters_etcd_rhv
+tag_masters_rhv
+tag_masters_etcd_rhv
 
 [etcd:children]
-tag_group_etcd_nodes_rhv
-tag_group_masters_etcd_rhv
+tag_etcd_nodes_rhv
+tag_masters_etcd_rhv
 
 [nodes:children]
 masters
@@ -36,17 +36,17 @@ app_hosts
 glusterfs
 
 [infra_hosts:children]
-tag_group_infra_nodes_rhv
+tag_infra_nodes_rhv
 
 [app_hosts:children]
-tag_group_app_nodes_rhv
+tag_app_nodes_rhv
 
 [glusterfs:children]
-tag_group_cns_nodes_rhv
+tag_cns_nodes_rhv
 
-[tag_group_masters_rhv]
-[tag_group_masters_etcd_rhv]
-[tag_group_etcd_nodes_rhv]
-[tag_group_infra_nodes_rhv]
-[tag_group_app_nodes_rhv]
-[tag_group_cns_nodes_rhv]
+[tag_masters_rhv]
+[tag_masters_etcd_rhv]
+[tag_etcd_nodes_rhv]
+[tag_infra_nodes_rhv]
+[tag_app_nodes_rhv]
+[tag_cns_nodes_rhv]

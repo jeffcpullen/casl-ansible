@@ -23,7 +23,6 @@ default_name_prefix: <REPLACE WITH PREFERRED PREFIX - i.e.: openshift>
 # Update the following values for your environment
 default_rhv_cluster: <REPLACE WITH RHV CLUSTER - i.e.: Default>
 default_template_name: <REPLACE WITH RHV TEMPLATE NAME - i.e.: rhel-server-7.6-template>
-default_flavor: <DEPRECATED>
 default_network: <REPLACE WITH RHV NETWORK - i.e.: ovirtmgmt>
 default_network_netmask: <REPLACE WITH VM NETMASK - i.e.: 255.255.255.0>
 default_network_gateway: <REPLACE WITH VM GATEWAY - i.e.:192.168.2.1>
@@ -55,7 +54,6 @@ openshift_master_cluster_public_hostname: "console.{{ env_id }}.{{ dns_domain }}
 cloud_infrastructure:
    masters:
      count: <REPLACE WITH NUMBER OF INSTANCES TO CREATE>
-     flavor: "{{ default_flavor }}"
      cpu_count: "{{ default_cpu_count }}"
      memory: "{{ default_memory }}"
      network: "{{ default_network }}"
@@ -73,7 +71,6 @@ cloud_infrastructure:
      etcd_volume_size: "{{ default_etcd_volume_size }}"
    etcdnodes:
      count: <REPLACE WITH NUMBER OF INSTANCES TO CREATE>
-     flavor: "{{ default_flavor }}"
      cpu_count: "{{ default_cpu_count }}"
      memory: "{{ default_memory }}"
      network: "{{ default_network }}"
@@ -91,7 +88,6 @@ cloud_infrastructure:
      etcd_volume_size: "{{ default_etcd_volume_size }}"
    appnodes:
      count: <REPLACE WITH NUMBER OF INSTANCES TO CREATE>
-     flavor: "{{ default_flavor }}"
      cpu_count: "{{ default_cpu_count }}"
      memory: "{{ default_memory }}"
      network: "{{ default_network }}"
@@ -109,7 +105,6 @@ cloud_infrastructure:
      origin_volume_size: "{{ default_etcd_volume_size }}"
    infranodes:
      count: <REPLACE WITH NUMBER OF INSTANCES TO CREATE>
-     flavor: "{{ default_flavor }}"
      cpu_count: "{{ default_cpu_count }}"
      memory: "{{ default_memory }}"
      network: "{{ default_network }}"
@@ -127,7 +122,6 @@ cloud_infrastructure:
      origin_volume_size: "{{ default_etcd_volume_size }}"
    cnsnodes:
      count: <REPLACE WITH NUMBER OF INSTANCES TO CREATE>
-     flavor: "{{ default_flavor }}"
      cpu_count: "{{ default_cpu_count }}"
      memory: "{{ default_memory }}"
      network: "{{ default_network }}"

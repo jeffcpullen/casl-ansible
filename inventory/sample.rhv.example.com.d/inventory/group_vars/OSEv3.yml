@@ -1,7 +1,8 @@
 ---
 
 # The username Ansible should use to access the instances with
-ansible_user: cloud-user
+ansible_user: "{{ lookup('env','ANSIBLE_USER') }}"
+ansible_password: "{{ lookup('env','ANSIBLE_PASS') }}"
 
 # Should Ansible use "become" to gain elevated privileges (i.e.: root)
 ansible_become: true
