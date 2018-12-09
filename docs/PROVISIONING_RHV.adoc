@@ -1,0 +1,92 @@
+= OpenShift on RHV using CASL
+
+TODO: Configure and test OpenShift Container Storage portions
+
+== Local Setup (one time, only)
+
+NOTE: These steps are a canned set of steps serving as an example, and may be different in your environment.
+
+Before getting started following this guide, you'll need the following:
+
+* Access to the RHV Manager with the proper policies to create resources (see details below)
+* Docker installed
+  ** RHEL/CentOS: `yum install -y docker`
+  ** Fedora: `dnf install -y docker`
+  ** **NOTE:** If you plan to run docker as yourself (non-root), your username must be added to the `docker` user group.
+* Ansible 2.5 or later installed
+  ** link:https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html[See Installation Guide]
+
+[source,bash]
+----
+cd ~/src/
+git clone https://github.com/redhat-cop/casl-ansible.git
+----
+
+* Run `ansible-galaxy` to pull in the necessary requirements for the CASL provisioning of OpenShift on RHV:
+
+NOTE: The target directory ( `galaxy` ) is **important** as the playbooks know to source roles and playbooks from that location.
+
+[source,bash]
+----
+cd ~/src/casl-ansible
+ansible-galaxy install -r casl-requirements.yml -p galaxy
+----
+
+== RHV Setup
+
+The following needs to be set up in your RHV manager before provisioning.
+
+* Access to the admin@internal or similarly privileged account.
+* A RHEL template must be created
+** Satellite CA certificate (if using Satellite) should be installed in the template
+** A user with sudo access and a known password
+* Storage domain must be available
+* DNS for all the OCP nodes, public and private URL and wildcard application URL must be in place PRIOR to running this playbook
+** During the RUN a list of all expected DNS entries will be provided
+** If any of the required DNS settings are not in place, the role will fail
+
+Cool! Now you're ready to provision OpenShift clusters on RHV.
+
+== Provision an OpenShift Cluster
+
+As an example, we'll provision the `sample.rhv.example.com` cluster defined in the `~/src/casl-ansible/inventory` directory.
+
+NOTE: Unless you already have a working inventory, it is recommended that you make a copy of the above mentioned sample inventory and keep it somewhere outside of the casl-ansible directory. This allows you to update/remove/change your casl-ansble source directory without losing your inventory. Also note that it may take some effort to get the inventory just right, hence it is very beneficial to keep it around for future use without having to redo everything.
+
+The following is just an example on how the `sample.rhv.example.com` inventory can be used:
+
+1. Update the variable settings in `group_vars/all.yml` with your environmental settings.
+
+[source,bash]
+----
+docker run':
+docker run -u `id -u` \
+ -v $HOME/.ssh/id_rsa:/opt/app-root/src/.ssh/id_rsa:Z  \
+ -v <REPLACE WITH PATH TO PARENT CASL GIT DIRECTORY>:/tmp/src:Z \
+ -e INVENTORY_DIR=<REPLACE WITH PATH TO PARENT CASL GIT DIRECTORY>/casl-ansible/inventory/sample.rhv.example.com.d/inventory \
+ -e PLAYBOOK_FILE=<REPLACE WITH PATH TO PARENT CASL GIT DIRECTORY>/casl-ansible/playbooks/openshift/rhv/provision.yml \
+ -e OVIRT_URL='https://rhvm.example.com/ovirt-engine/api/v4' \
+ -e OVIRT_USERNAME='admin@internal' \
+ -e OVIRT_PASSWORD='rhvm_password' \
+ -e OVIRT_CA='<REPLACE WITH PATH TO PARENT CASL GIT DIRECTORY>/casl-ansible/ca.crt' \
+ -e ANSIBLE_USER='cloud-user' \
+ -e ANSIBLE_PASS='template_password' \
+ -i redhat-cop/casl-ansible
+
+----
+
+== Updating a Cluster
+
+Once provisioned, a cluster may be adjusted/reconfigured as needed by updating the inventory and re-running the `end-to-end.yml` playbook.
+
+== Scaling Up and Down
+
+A cluster's Infra and App nodes may be scaled up and down by editing the following parameters in the `all.yml` file and then re-running the `end-to-end.yml` playbook as shown above.
+
+[source,yaml]
+----
+appnodes:
+  count: <REPLACE WITH NUMBER OF INSTANCES TO CREATE>
+infranodes:
+  count: <REPLACE WITH NUMBER OF INSTANCES TO CREATE>
+----

@@ -3,13 +3,6 @@
 
 #- include_vars: ovirt_password.yml
 
-#- name: Obtain SSO token with using username/password credentials
-#  ovirt_auth:
-#    url: https://rhvm.rhv.homelab.work/ovirt-engine/api/v3
-#    username: admin@internal
-#    ca_file: ca.crt
-#    password: "{{ ovirt_password }}"
-
 # Verify expected DNS and store associated IPs
 - name: Validate and store OpenShift Master IPs
   command: "dig +short {{ cloud_infrastructure.masters.name_prefix }}-{{ item }}.{{ env_id }}.{{ dns_domain }}"

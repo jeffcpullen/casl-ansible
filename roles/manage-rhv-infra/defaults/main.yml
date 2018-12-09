@@ -1,17 +1,24 @@
 ---
-## Default volume device sizes
-default_root_volume_size: '50'
-default_docker_volume_size: '40'
-default_etcd_volume_size: '40'
-default_cns_volume_size: '200'
-default_rhv_storage_domain: "gluster-vmstore"
+# Default RHV environment settings to use
+# Update the following values for your environment
+default_rhv_cluster: "Default"
+default_template_name: "rhel-server-7.6-template"
 default_network: "ovirtmgmt"
-default_flavor: "Large"
-default_cluster: Default
-default_network_netmask: '255.255.255.0'
-default_network_gateway: '192.168.2.1'
-default_nic_name: 'eth0'
+default_network_netmask: 255.255.255.0
+default_network_gateway: 192.168.2.1
+default_network_nic_name: eth0
 
+# Defaults for CPU and memory, you will almost certainly want to customize these below under each type (master/infra/appnode)
+default_cpu_count: 4
+default_memory: 16384Mib
+
+default_root_volume_size: 40Gib
+default_rhv_storage_domain: data-store-01
+default_docker_volume_size: 100Gib
+default_etcd_volume_size: 40Gib
+default_origin_volume_size: 40Gib
+default_cns_volume_size: '200Gib'
+default_gluster_storage_domain: vm-store
 
 # Default port for OpenShift API and Web Console
 openshift_master_api_port: 8443
@@ -22,70 +29,89 @@ openshift_master_console_port: 8443
 default_cloud_infrastructure:
    masters:
      count: 1
-     flavor: "{{ default_flavor }}"
+     cpu_count: "{{ default_cpu_count }}"
+     memory: "{{ default_memory }}"
      network: "{{ default_network }}"
+     template_name: "{{ default_template_name }}"
      network_netmask: "{{ default_network_netmask }}"
      network_gateway: "{{ default_network_gateway }}"
-     nic_name: "{{ default_nic_name }}"
-     name_prefix: "master"
-     rhv_cluster: "{{ default_cluster }}"
+     network_nic_name: "{{ default_network_nic_name }}"
+     name_prefix: "{{ default_name_prefix }}"
+     rhv_cluster: "{{ default_rhv_cluster }}"
      root_volume_size: "{{ default_root_volume_size }}"
      rhv_storage_domain: "{{ default_rhv_storage_domain }}"
+     docker_storage_domain: "{{ default_rhv_storage_domain }}"
      docker_volume_size: "{{ default_docker_volume_size }}"
+     etcd_storage_domain: "{{ default_rhv_storage_domain }}"
      etcd_volume_size: "{{ default_etcd_volume_size }}"
    etcdnodes:
      count: 0
-     flavor: "{{ default_flavor }}"
+     cpu_count: "{{ default_cpu_count }}"
+     memory: "{{ default_memory }}"
      network: "{{ default_network }}"
+     template_name: "{{ default_template_name }}"
      network_netmask: "{{ default_network_netmask }}"
      network_gateway: "{{ default_network_gateway }}"
-     nic_name: "{{ default_nic_name }}"
-     name_prefix: "etcd"
-     rhv_cluster: "{{ default_cluster }}"
+     network_nic_name: "{{ default_network_nic_name }}"
+     name_prefix: "{{ default_name_prefix }}"
+     rhv_cluster: "{{ default_rhv_cluster }}"
      root_volume_size: "{{ default_root_volume_size }}"
      rhv_storage_domain: "{{ default_rhv_storage_domain }}"
+     docker_storage_domain: "{{ default_rhv_storage_domain }}"
      docker_volume_size: "{{ default_docker_volume_size }}"
+     etcd_storage_domain: "{{ default_rhv_storage_domain }}"
      etcd_volume_size: "{{ default_etcd_volume_size }}"
    appnodes:
-     count: 3
-     flavor: "{{ default_flavor }}"
+     count: 0
+     cpu_count: "{{ default_cpu_count }}"
+     memory: "{{ default_memory }}"
      network: "{{ default_network }}"
+     template_name: "{{ default_template_name }}"
      network_netmask: "{{ default_network_netmask }}"
      network_gateway: "{{ default_network_gateway }}"
-     nic_name: "{{ default_nic_name }}"
-     name_prefix: "node"
-     rhv_cluster: "{{ default_cluster }}"
+     network_nic_name: "{{ default_network_nic_name }}"
+     name_prefix: "{{ default_name_prefix }}"
+     rhv_cluster: "{{ default_rhv_cluster }}"
      root_volume_size: "{{ default_root_volume_size }}"
      rhv_storage_domain: "{{ default_rhv_storage_domain }}"
+     docker_storage_domain: "{{ default_rhv_storage_domain }}"
      docker_volume_size: "{{ default_docker_volume_size }}"
-     etcd_volume_size: "{{ default_etcd_volume_size }}"
+     origin_storage_domain: "{{ default_rhv_storage_domain }}"
+     origin_volume_size: "{{ default_etcd_volume_size }}"
    infranodes:
      count: 1
-     flavor: "{{ default_flavor }}"
+     cpu_count: "{{ default_cpu_count }}"
+     memory: "{{ default_memory }}"
      network: "{{ default_network }}"
+     template_name: "{{ default_template_name }}"
      network_netmask: "{{ default_network_netmask }}"
      network_gateway: "{{ default_network_gateway }}"
-     nic_name: "{{ default_nic_name }}"
-     name_prefix: "infra"
-     rhv_cluster: "{{ default_cluster }}"
+     network_nic_name: "{{ default_network_nic_name }}"
+     name_prefix: "{{ default_name_prefix }}"
+     rhv_cluster: "{{ default_rhv_cluster }}"
      root_volume_size: "{{ default_root_volume_size }}"
      rhv_storage_domain: "{{ default_rhv_storage_domain }}"
+     docker_storage_domain: "{{ default_rhv_storage_domain }}"
      docker_volume_size: "{{ default_docker_volume_size }}"
-     etcd_volume_size: "{{ default_etcd_volume_size }}"
+     origin_storage_domain: "{{ default_rhv_storage_domain }}"
+     origin_volume_size: "{{ default_etcd_volume_size }}"
    cnsnodes:
      count: 0
-     flavor: "{{ default_flavor }}"
+     cpu_count: "{{ default_cpu_count }}"
+     memory: "{{ default_memory }}"
      network: "{{ default_network }}"
+     template_name: "{{ default_template_name }}"
      network_netmask: "{{ default_network_netmask }}"
      network_gateway: "{{ default_network_gateway }}"
-     nic_name: "{{ default_nic_name }}"
-     name_prefix: "cns"
-     rhv_cluster: "{{ default_cluster }}"
+     network_nic_name: "{{ default_network_nic_name }}"
+     name_prefix: "{{ default_name_prefix }}"
+     rhv_cluster: "{{ default_rhv_cluster }}"
      root_volume_size: "{{ default_root_volume_size }}"
-     docker_volume_size: "{{ default_docker_volume_size }}"
      rhv_storage_domain: "{{ default_rhv_storage_domain }}"
+     docker_storage_domain: "{{ default_rhv_storage_domain }}"
+     docker_volume_size: "{{ default_docker_volume_size }}"
+     gluster_storage_domain: "{{ default_gluster_storage_domain }}"
      gluster_volume_size: "{{ default_cns_volume_size }}"
-     etcd_volume_size: "{{ default_etcd_volume_size }}"
 
 ## Default volume device names
 default_root_volume: '/dev/sda1'

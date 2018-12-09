@@ -5,10 +5,6 @@
 
   tasks:
 
-#  - name: Pause for a moment to allow systems to finish with cloud-init
-#    pause:
-#      minutes: 1
-
 - name: Refresh Server inventory
   hosts: localhost
   connection: local
