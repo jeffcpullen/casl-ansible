@@ -37,6 +37,8 @@ default_rhv_storage_domain: <REPLACE WITH THE DEFAULT RHV STORAGE DOMAIN TO USE 
 default_docker_volume_size: <REPLACE WITH THE DEFAULT DOCKER DEVICE STORAGE TO ALLOCATE - i.e.: 100Gib>
 default_etcd_volume_size: <REPLACE WITH THE DEFAULT ETCD STORAGE DEVICE TO ALLOCATE - i.e.: 40Gib>
 default_origin_volume_size: <REPLACE WITH THE DEFAULT ORIGIN STORAGE DEVICE TO ALLOCATE - i.e.: 40Gib>
+default_cns_volume_size: '<REPLACE WITH THE DEFAULT GLUSTER STORAGE DEVICE TO ALLOCATE - i.e.: 200Gib>'
+default_gluster_storage_domain: '<REPLACE WITH THE NAME OF THE GLUSTER STORAGE DOMAIN - i.e.: vm-store>'
 
 # Define custom Master(s) API and Console Port
 # Comment out these entries to use a different port for both the Web Console and OpenShift API - Default port is 8443
@@ -135,8 +137,8 @@ cloud_infrastructure:
      rhv_storage_domain: "{{ default_rhv_storage_domain }}"
      docker_storage_domain: "{{ default_rhv_storage_domain }}"
      docker_volume_size: "{{ default_docker_volume_size }}"
-     gluster_storage_domain: <REPLACE WITH THE STORAGE DOMAIN TO USE FOR DOCKER STORAGE>
-     gluster_volume_size: <REPLACE WITH THE SIZE (Gi) FOR GLUSTER POOL DEVICE>
+     gluster_storage_domain: "{{ default_gluster_storage_domain }}"
+     gluster_volume_size: "{{ default_cns_volume_size }}"
 
 
 ## Temporary set for Docker and Gluster Storage block device names

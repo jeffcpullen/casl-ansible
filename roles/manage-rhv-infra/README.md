@@ -21,50 +21,93 @@ Infrastructure skeleton variables
 ---------------------------------
 
 ```yaml
-cloud_infrastructure: **mandatory**
-   region: **mandatory**
-   image_name: **mandatory**
-   masters: **mandatory**
-     count: **defaulted**
-     flavor: **defaulted**
-     zones:
-     - **at least 1 zone specification is mandatory**
+cloud_infrastructure:
+   masters:
+     count: **mandatory**
+     cpu_count: **defaulted**
+     memory: **defaulted**
+     network: **defaulted**
+     template_name: **defaulted**
+     network_netmask: **defaulted**
+     network_gateway: **defaulted**
+     network_nic_name: **defaulted**
      name_prefix: **defaulted**
+     rhv_cluster: **defaulted**
      root_volume_size: **defaulted**
+     rhv_storage_domain: **defaulted**
+     docker_storage_domain: **defaulted**
      docker_volume_size: **defaulted**
-   etcdnodes: **not mandatory when deploying embedded etcd**
-     count: **defaulted**
-     flavor: **defaulted**
-     zones:
-     - **at least 1 zone specification is mandatory when NOT deploying embedded etcd**
+     etcd_storage_domain: **defaulted**
+     etcd_volume_size: **defaulted**
+   etcdnodes:
+     count: **mandatory**
+     cpu_count: **defaulted**
+     memory: **defaulted**
+     network: **defaulted**
+     template_name: **defaulted**
+     network_netmask: **defaulted**
+     network_gateway: **defaulted**
+     network_nic_name: **defaulted**
      name_prefix: **defaulted**
+     rhv_cluster: **defaulted**
      root_volume_size: **defaulted**
-     docker_volume_size:**defaulted**
-   appnodes: **mandatory**
-     count: **defaulted**
-     flavor: **defaulted**
-     zones:
-     - **at least 1 zone specification is mandatory**
-     name_prefix: **defaulted**
-     root_volume_size: **defaulted**
+     rhv_storage_domain: **defaulted**
+     docker_storage_domain: **defaulted**
      docker_volume_size: **defaulted**
-   infranodes: **mandatory**
-     count: **defaulted**
-     flavor: **defaulted**
-     zones:
-     - **at least 1 zone specification is mandatory**
+     etcd_storage_domain: **defaulted**
+     etcd_volume_size: **defaulted**
+   appnodes:
+     count: **mandatory**
+     cpu_count: **defaulted**
+     memory: **defaulted**
+     network: **defaulted**
+     template_name: **defaulted**
+     network_netmask: **defaulted**
+     network_gateway: **defaulted**
+     network_nic_name: **defaulted**
      name_prefix: **defaulted**
+     rhv_cluster: **defaulted**
      root_volume_size: **defaulted**
+     rhv_storage_domain: **defaulted**
+     docker_storage_domain: **defaulted**
      docker_volume_size: **defaulted**
-   cnsnodes: **not mandatory when CNS is not required**
-     count: **mandatory when using CNS and with a fixed value of 3. If not using CNS this is defaulted to 0**
-     flavor: **defaulted**
-     zones:
-     - **at least 1 zone specification is mandatory when using CNS**
+     origin_storage_domain: **defaulted**
+     origin_volume_size: **defaulted**
+   infranodes:
+     count: **mandatory**
+     cpu_count: **defaulted**
+     memory: **defaulted**
+     network: **defaulted**
+     template_name: **defaulted**
+     network_netmask: **defaulted**
+     network_gateway: **defaulted**
+     network_nic_name: **defaulted**
      name_prefix: **defaulted**
+     rhv_cluster: **defaulted**
      root_volume_size: **defaulted**
+     rhv_storage_domain: **defaulted**
+     docker_storage_domain: **defaulted**
      docker_volume_size: **defaulted**
-     gluster_volume_size: **defaulted**
+     origin_storage_domain: **defaulted**
+     origin_volume_size: **defaulted**
+   cnsnodes:
+     count: **mandatory**
+     cpu_count: **defaulted**
+     memory: **defaulted**
+     network: **defaulted**
+     template_name: **defaulted**
+     network_netmask: **defaulted**
+     network_gateway: **defaulted**
+     network_nic_name: **defaulted**
+     name_prefix: **defaulted**
+     rhv_cluster: **defaulted**
+     root_volume_size: **defaulted**
+     rhv_storage_domain: **defaulted**
+     docker_storage_domain: **defaulted**
+     docker_volume_size: **defaulted**
+     gluster_storage_domain: **mandatory**
+     gluster_volume_size: **mandatory**
+
 ```
 
 Other variables
@@ -72,19 +115,3 @@ Other variables
 
 | Variable        | Description                           |
 |:---------------:|:-------------------------------------:|
-|**rhv_access_key**| rhv access key from RHV_ACCESS_KEY_ID environment variable
-|**rhv_secret_key**| rhv Secret access key from RHV_SECRET_ACCESS_KEY environment variable
-|**rhv_key_name**| rhv Key pair name to be used with the instances
-|**group_masters_tag**| tag to create ec2 groups for master nodes to be used in the inventory
-|**group_masters_etcd_tag**| tag to create ec2 groups for etcd embedded nodes to be used in the inventory
-|**group_etcd_nodes_tag**| tag to create ec2 groups for etcd nodes to be used in the inventory
-|**group_infra_nodes_tag**| tag to create ec2 groups for infra nodes to be used in the inventory
-|**group_app_nodes_tag**| tag to create ec2 groups for compute nodes to be used in the inventory
-|**group_cns_nodes_tag**| tag to create ec2 groups for CNS nodes to be used in the inventory
-|**labels_masters_tag**| tag to feed master node labels in OCP
-|**labels_etcd_nodes_tag**| tag to feed etcd node labels in OCP
-|**labels_infra_nodes_tag**| tag to feed infra node labels in OCP
-|**labels_app_nodes_tag**| tag to feed compute node labels in OCP
-|**labels_cns_nodes_tag**| tag to feed CNS node labels in OCP
-|**env_id**| environment ID to use for the Cluster
-|**public_dns_domain**| public DNS Zone where to register de Cluster
